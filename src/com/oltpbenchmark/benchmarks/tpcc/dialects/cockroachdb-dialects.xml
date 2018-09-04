@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<dialects>
+    <dialect type="cockroachdb">
+        <procedure name="NewOrder">
+            <statement name="stmtGetDistSQL">
+                SELECT d_next_o_id,d_tax
+                        FROM district
+                        WHERE d_w_id = ? AND d_id = ?
+            </statement>
+            <statement name="stmtGetStockSQL">
+                SELECT s_quantity, s_data, s_dist_01, s_dist_02, s_dist_03, s_dist_04, s_dist_05,
+                    s_dist_06, s_dist_07, s_dist_08, s_dist_09, s_dist_10
+                    FROM stock
+                    WHERE s_i_id = ? AND s_w_id = ?
+            </statement>
+        </procedure>
+        <procedure name="Payment">
+            <statement name="payUpdateWhseSQL">
+              UPDATE warehouse
+                 SET W_YTD =  W_YTD + cast(? as decimal)
+              WHERE W_ID = ? 
+            </statement>
+        </procedure>
+        <procedure name="Payment">
+            <statement name="payUpdateDistSQL">
+              UPDATE district 
+                 SET D_YTD = D_YTD + cast(? as decimal)
+               WHERE D_W_ID = ?
+                 AND D_ID = ?
+            </statement>
+        </procedure>
+        <procedure name="Delivery">
+            <statement name="delivUpdateCustBalDelivCntSQL">
+              UPDATE customer
+                SET C_BALANCE = C_BALANCE + cast(? as decimal),
+                  C_DELIVERY_CNT = C_DELIVERY_CNT + 1
+                WHERE C_W_ID = ?
+                  AND C_D_ID = ?
+                  AND C_ID = ? 
+            </statement>
+        </procedure>
+    </dialect>
+</dialects> 

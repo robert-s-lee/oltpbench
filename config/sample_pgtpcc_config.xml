@@ -2,48 +2,39 @@
 <parameters>
     <dbtype>postgres</dbtype>
     <driver>org.postgresql.Driver</driver>
-    <DBUrl>jdbc:postgresql://diuflx01:5432/tpcc/</DBUrl>
+    <DBUrl>jdbc:postgresql://127.0.0.1:5432/tpcc</DBUrl>
     <DBName>tpcc</DBName>
-    <username>postgres</username>
-    <password>postgres</password>
+    <username>rslee</username>
+    <password></password>
     <terminals>10</terminals>
     
     <scalefactor>1</scalefactor>
     
-   	
-   	<transactiontypes>
+     <transactiontypes>
     	<transactiontype>
-    		<name>INVALID</name>
-    		<id>0</id>
+    		<name>NewOrder</name>
     	</transactiontype>
     	<transactiontype>
-    		<name>NEW_ORDER</name>
-    		<id>1</id>
+    		<name>Payment</name>
     	</transactiontype>
     	<transactiontype>
-    		<name>PAYMENT</name>
-    		<id>2</id>
+    		<name>OrderStatus</name>
     	</transactiontype>
     	<transactiontype>
-    		<name>ORDER_STATUS</name>
-    		<id>3</id>
+    		<name>Delivery</name>
     	</transactiontype>
     	<transactiontype>
-    		<name>DELIVERY</name>
-    		<id>4</id>
+    		<name>StockLevel</name>
     	</transactiontype>
-    	<transactiontype>
-    		<name>STOCK_LEVEL</name>
-    		<id>5</id>
-    	</transactiontype>
-   	</transactiontypes>
-   	
+   	</transactiontypes>	
+	
+	
     <works>
         <work>
-          <time>20</time>
-          <rate>10</rate>
-          <weights>0,20,20,20,20,20</weights>
+          <time>60</time>
+          <rate>10000</rate>
+          <weights>45,43,4,4,4</weights>
         </work>
-	</works>
-		
+    </works>
+	
 </parameters>
