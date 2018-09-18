@@ -8,7 +8,6 @@
     <username>root</username>
     <password></password>
     <isolation>TRANSACTION_SERIALIZABLE</isolation>
-    <ApplicationName>test</ApplicationName>
     
     <!-- Scale factor is the number of warehouses in TPCC -->
     <scalefactor>1</scalefactor>
@@ -19,6 +18,7 @@
         <work>
           <time>60</time>
           <rate>10000</rate>
+          <ratelimited bench="tpcc">true</ratelimited>
           <weights>45,43,4,4,4</weights>
         </work>
     </works>
