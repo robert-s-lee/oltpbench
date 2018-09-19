@@ -11,7 +11,7 @@ Single node on a laptop is a good way to unit test configuration and make sure e
 
 CPU will be a typical bottlenect of a small local system.
 
-```
+```bash
 cockroach start --insecure --port=26257 --http-port=26258 --store=cockroach-data/1 --cache=256MiB --background
 cockroach sql --insecure -e "drop database if exists tpcc cascade; create database tpcc"
 time ./oltpbenchmark -b tpcc -c config/tpcc_config_cockroachdb.xml --create=true --load=true -s 5 -v -o outputfile
@@ -25,7 +25,7 @@ done
 
 CockroachDB has roachprod that allows testing in cloud.  
 
-
+```bash
 f=robert-oltpbenchmark
 n=4
 (( lastnode = $n - 1 ))
@@ -48,14 +48,15 @@ roachprod run $f:$n -- 'nohup haproxy -f haproxy.cfg'
 # download the simulator
 roachprod run $f:$n -- 'git clone https://github.com/robert-s-lee/oltpbench.git --branch cockroachdb --single-branch oltpbenchmark; cd oltpbenchmark; ant'
 
-# run the workload
+# seup the workload
 roachprod run $f:$n -- "./cockroach sql --insecure --host $crdbnode -e 'drop database if exists tpcc cascade; create database tpcc'"
 roachprod run $f:$n -- "cd oltpbenchmark; time ./oltpbenchmark -b tpcc -c config/tpcc_config_cockroachdb.xml --create=true --load=true -s 5 -v -o outputfile"
 roachprod run $f:$n -- "./cockroach sql --insecure --database tpcc --host $crdbnode -e 'ALTER TABLE warehouse SPLIT AT select generate_series(1,10, 10); ALTER TABLE district SPLIT AT select generate_series(1,10, 10), 0; ALTER TABLE item SPLIT AT select generate_series(1, 100000, 100); ALTER TABLE history split at select gen_random_uuid() from generate_series(1, 1000);'"
 
+
+# run the workload
 for t in 1 2 4 8 16; do 
 roachprod run $f:$n -- "cd oltpbenchmark; sed -i.bak -e 's|<terminals>.*</terminals>|<terminals>$t</terminals>|' config/tpcc_config_cockroachdb.xml; time ./oltpbenchmark -b tpcc -c config/tpcc_config_cockroachdb.xml --execute=true -s 5 -v -o outputfile"
 done
 
-
-
+```
