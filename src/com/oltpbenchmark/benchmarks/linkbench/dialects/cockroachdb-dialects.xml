@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<dialects>
+    <dialect type="cockroachdb">
+        <procedure name="GetLinkList">
+            <statement name="getLinkListsStmt">
+                  select id1, id2, link_type,
+                    visibility, data, time,
+                    version from  linktable
+                    where id1 = ? and link_type = ?
+                    and time >= ?
+                    and time &lt;= ?
+                    and visibility = ?
+                    order by time desc
+                    limit ? offset ?
+            </statement>
+        </procedure>
+   </dialect>
+</dialects> 

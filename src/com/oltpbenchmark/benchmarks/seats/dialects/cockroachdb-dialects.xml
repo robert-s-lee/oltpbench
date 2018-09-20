@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <dialects>
-    <dialect type="POSTGRES">
+    <dialect type="COCKROACHDB">
         <procedure name="DeleteReservation">
             <statement name="UpdateCustomer">UPDATE customer SET C_BALANCE = C_BALANCE + ?, C_IATTR00 = ?, C_IATTR10 = C_IATTR10 - 1, C_IATTR11 = C_IATTR10 - 1 WHERE C_ID = ?</statement>
             <statement name="GetCustomerByIdStr">SELECT C_ID FROM customer WHERE C_ID_STR = ?</statement>
@@ -18,7 +18,7 @@
             <statement name="GetNearbyAirports">SELECT * FROM airport_distance WHERE D_AP_ID0 = ? AND D_DISTANCE &lt;= ? ORDER BY D_DISTANCE ASC </statement>
         </procedure>
         <procedure name="FindOpenSeats">
-            <statement name="GetFlight">SELECT F_STATUS, F_BASE_PRICE, F_SEATS_TOTAL, F_SEATS_LEFT, (F_BASE_PRICE + (F_BASE_PRICE * CAST(1 - (F_SEATS_LEFT / F_SEATS_TOTAL) as FLOAT)))) AS F_PRICE FROM flight WHERE F_ID = ?</statement>
+            <statement name="GetFlight">SELECT F_STATUS, F_BASE_PRICE, F_SEATS_TOTAL, F_SEATS_LEFT, (F_BASE_PRICE + (F_BASE_PRICE * CAST(1 - (F_SEATS_LEFT / F_SEATS_TOTAL) as FLOAT))) AS F_PRICE FROM flight WHERE F_ID = ?</statement>
             <statement name="GetSeats">SELECT R_ID, R_F_ID, R_SEAT FROM reservation WHERE R_F_ID = ?</statement>
         </procedure>
         <procedure name="LoadConfig">

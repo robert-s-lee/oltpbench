@@ -7,7 +7,7 @@ password=""
 isolation="TRANSACTION_SERIALIZABLE"
 terminal="1 2"
 scalefactor=1
-donotload=""
+loaddata="1"
 
 # options
 while getopts "d:lw:t:" opt; do
@@ -16,7 +16,7 @@ while getopts "d:lw:t:" opt; do
       dbtype="${OPTARG}"
       ;;
     l)
-      donotload=1
+      loaddata=""
       ;;
     w)
       workload="${OPTARG}"
@@ -44,21 +44,23 @@ case $dbtype in
   mysql)
     driver="com.mysql.jdbc.Driver"
     dburl="jdbc:mysql://localhost:3306/${workload}?reWriteBatchedStatement=${multirow}"
-    if [ -z "$donotload" ]; then
+    if [ -z "$loaddata" ]; then
       mysql -u root -e "drop database if exists ${workload}; create database ${workload}"
     fi
     ;;
   postgres)
     driver="org.postgresql.Driver"
-    dburl="jdbc:postgresql://127.0.0.1:26257/${workload}?reWriteBatchedInserts=${multirow}"
-    if [ -z "$donotload" ]; then
-      psql -c " drop database if exists ${workload}; create database ${workload};"
+    dburl="jdbc:postgresql://127.0.0.1/${workload}?reWriteBatchedInserts=${multirow}"
+    if [ -z "$loaddata" ]; then
+      psql -c " drop database if exists ${workload}"
+      psql -c " create database ${workload};"
     fi
+    username=rslee
     ;;
   cockroachdb)
     driver="org.postgresql.Driver"
     dburl="jdbc:postgresql://127.0.0.1:26257/${workload}?reWriteBatchedInserts=${multirow}"
-    if [ -z "$donotload" ]; then
+    if [ -z "$loaddata" ]; then
       cockroach sql --insecure -e "drop database if exists ${workload} cascade; create database ${workload}"
     fi
     ;;
@@ -78,7 +80,7 @@ sed  \
   -e  "s|<scalefactor>.*</scalefactor>|<scalefactor>${scalefactor}</scalefactor>|" \
   config/sample_${workload}_config.xml  > config/${dbtype}_${workload}_config.xml
 
-if [ -z "$donotload" ]; then
+if [ -z "$loaddata" ]; then
   time ./oltpbenchmark -b ${workload} -c config/${dbtype}_${workload}_config.xml --create=true --load=true -s 5 -v -o outputfile
 fi
 
