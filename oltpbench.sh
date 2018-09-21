@@ -7,7 +7,7 @@ password=""
 isolation="TRANSACTION_SERIALIZABLE"
 terminal="1 2"
 scalefactor=1
-loaddata="1"
+loaddata=""
 
 # options
 while getopts "d:lw:t:" opt; do
@@ -16,7 +16,7 @@ while getopts "d:lw:t:" opt; do
       dbtype="${OPTARG}"
       ;;
     l)
-      loaddata=""
+      loaddata="1"
       ;;
     w)
       workload="${OPTARG}"
@@ -37,7 +37,6 @@ case ${workload} in
     multirow=true
     ;;
 esac
-multirow=true
 
 # setup dtabase locally
 case $dbtype in 
@@ -50,7 +49,7 @@ case $dbtype in
     ;;
   postgres)
     driver="org.postgresql.Driver"
-    dburl="jdbc:postgresql://127.0.0.1/${workload}?reWriteBatchedInserts=${multirow}"
+    dburl="jdbc:postgresql://127.0.0.1/${workload}?reWriteBatchedInserts=${multirow}\&amp;ApplicationName=${workload}"
     if [ -z "$loaddata" ]; then
       psql -c " drop database if exists ${workload}"
       psql -c " create database ${workload};"
@@ -59,7 +58,7 @@ case $dbtype in
     ;;
   cockroachdb)
     driver="org.postgresql.Driver"
-    dburl="jdbc:postgresql://127.0.0.1:26257/${workload}?reWriteBatchedInserts=${multirow}"
+    dburl="jdbc:postgresql://127.0.0.1:26257/${workload}?reWriteBatchedInserts=${multirow}\&amp;ApplicationName=${workload}"
     if [ -z "$loaddata" ]; then
       cockroach sql --insecure -e "drop database if exists ${workload} cascade; create database ${workload}"
     fi
@@ -80,7 +79,7 @@ sed  \
   -e  "s|<scalefactor>.*</scalefactor>|<scalefactor>${scalefactor}</scalefactor>|" \
   config/sample_${workload}_config.xml  > config/${dbtype}_${workload}_config.xml
 
-if [ -z "$loaddata" ]; then
+if [ ! -z "$loaddata" ]; then
   time ./oltpbenchmark -b ${workload} -c config/${dbtype}_${workload}_config.xml --create=true --load=true -s 5 -v -o outputfile
 fi
 

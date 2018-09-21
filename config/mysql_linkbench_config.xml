@@ -2,9 +2,9 @@
 <parameters>
 
 	<!-- Connection details -->
-	<dbtype>cockroachdb</dbtype>
-	<driver>org.postgresql.Driver</driver>
-	<DBUrl>jdbc:postgresql://127.0.0.1:26257/linkbench?reWriteBatchedInserts=true&amp;ApplicationName=linkbench</DBUrl>
+	<dbtype>mysql</dbtype>
+	<driver>com.mysql.jdbc.Driver</driver>
+	<DBUrl>jdbc:mysql://localhost:3306/linkbench?reWriteBatchedStatement=true</DBUrl>
 	<username>root</username>
 	<password></password>
 

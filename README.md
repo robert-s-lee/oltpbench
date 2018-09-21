@@ -18,7 +18,7 @@ Together with the framework we provide the following OLTP/Web benchmarks:
   * Epinions.com
   * [TATP](http://tatpbenchmark.sourceforge.net/)
   * [AuctionMark](http://hstore.cs.brown.edu/projects/auctionmark/)
-  * SEATS
+  * [SEATS](http://hstore.cs.brown.edu/projects/seats/)
   * [YCSB](https://github.com/brianfrankcooper/YCSB)
   * [JPAB](http://www.jpab.org) (Hibernate)
   * [CH-benCHmark](http://www-db.in.tum.de/research/projects/CHbenCHmark/?lang=en)

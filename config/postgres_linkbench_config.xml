@@ -2,10 +2,10 @@
 <parameters>
 
 	<!-- Connection details -->
-	<dbtype>cockroachdb</dbtype>
+	<dbtype>postgres</dbtype>
 	<driver>org.postgresql.Driver</driver>
-	<DBUrl>jdbc:postgresql://127.0.0.1:26257/linkbench?reWriteBatchedInserts=true&amp;ApplicationName=linkbench</DBUrl>
-	<username>root</username>
+	<DBUrl>jdbc:postgresql://127.0.0.1/linkbench?reWriteBatchedInserts=true</DBUrl>
+	<username>rslee</username>
 	<password></password>
 
 	<isolation>TRANSACTION_SERIALIZABLE</isolation>
