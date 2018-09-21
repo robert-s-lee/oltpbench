@@ -43,14 +43,14 @@ case $dbtype in
   mysql)
     driver="com.mysql.jdbc.Driver"
     dburl="jdbc:mysql://localhost:3306/${workload}?reWriteBatchedStatement=${multirow}"
-    if [ -z "$loaddata" ]; then
+    if [ ! -z "$loaddata" ]; then
       mysql -u root -e "drop database if exists ${workload}; create database ${workload}"
     fi
     ;;
   postgres)
     driver="org.postgresql.Driver"
     dburl="jdbc:postgresql://127.0.0.1/${workload}?reWriteBatchedInserts=${multirow}\&amp;ApplicationName=${workload}"
-    if [ -z "$loaddata" ]; then
+    if [ ! -z "$loaddata" ]; then
       psql -c " drop database if exists ${workload}"
       psql -c " create database ${workload};"
     fi
@@ -59,7 +59,7 @@ case $dbtype in
   cockroachdb)
     driver="org.postgresql.Driver"
     dburl="jdbc:postgresql://127.0.0.1:26257/${workload}?reWriteBatchedInserts=${multirow}\&amp;ApplicationName=${workload}"
-    if [ -z "$loaddata" ]; then
+    if [ ! -z "$loaddata" ]; then
       cockroach sql --insecure -e "drop database if exists ${workload} cascade; create database ${workload}"
     fi
     ;;
