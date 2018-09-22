@@ -4,15 +4,15 @@
     <!-- Connection details -->
     <dbtype>cockroachdb</dbtype>
     <driver>org.postgresql.Driver</driver>
-    <DBUrl>jdbc:postgresql://127.0.0.1:26257/voter?reWriteBatchedInserts=true</DBUrl>
+    <DBUrl>jdbc:postgresql://localhost:26257/voter?reWriteBatchedInserts=true&amp;ApplicationName=voter</DBUrl>
     <username>root</username>
     <password></password>
     <isolation>TRANSACTION_SERIALIZABLE</isolation>
     
-    <scalefactor>10</scalefactor>
+    <scalefactor>1</scalefactor>
     
     <!-- The workload -->
-    <terminals>16</terminals>
+    <terminals>2</terminals>
     <works>
         <work>
           <time>300</time>

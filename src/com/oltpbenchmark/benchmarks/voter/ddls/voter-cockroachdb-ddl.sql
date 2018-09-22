@@ -30,8 +30,9 @@ CREATE TABLE VOTES
 , state              varchar(2) NOT NULL 
 , contestant_number  integer    NOT NULL REFERENCES CONTESTANTS (contestant_number)
 , created            timestamp  NOT NULL
+, vote_unique        uuid default gen_random_uuid()
 , INDEX idx_votes_phone_number (phone_number)
-, primary key (contestant_number, state, vote_id)
+, primary key (contestant_number, state, vote_unique)
 ) interleave in parent CONTESTANTS (contestant_number);
 
 -- rollup of votes by phone number, used to reject excessive voting

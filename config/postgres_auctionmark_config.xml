@@ -4,8 +4,8 @@
     <!-- Connection details -->
     <dbtype>postgres</dbtype>
     <driver>org.postgresql.Driver</driver>
-    <DBUrl>jdbc:postgresql://127.0.0.1/auctionmark?reWriteBatchedInserts=true&amp;ApplicationName=auctionmark</DBUrl>
-    <username>rslee</username>
+    <DBUrl>jdbc:postgresql://localhost:5432/auctionmark?reWriteBatchedInserts=true&amp;ApplicationName=auctionmark</DBUrl>
+    <username>root</username>
     <password></password>
     <isolation>TRANSACTION_SERIALIZABLE</isolation>
     

@@ -2,44 +2,45 @@
 <parameters>
 
     <!-- Connection details -->
-    <dbtype>cockroachdb</dbtype>
+    <dbtype>postgres</dbtype>
     <driver>org.postgresql.Driver</driver>
-    <DBUrl>jdbc:postgresql://localhost:26257/smallbank?reWriteBatchedInserts=true&amp;ApplicationName=smallbank</DBUrl>
+    <DBUrl>jdbc:postgresql://localhost:5432/ycsb?reWriteBatchedInserts=true&amp;ApplicationName=ycsb</DBUrl>
     <username>root</username>
-    <password></password>    
+    <password></password>
     <isolation>TRANSACTION_SERIALIZABLE</isolation>
     
+    <!-- Scalefactor in YCSB is *1000 the number of rows in the USERTABLE-->
     <scalefactor>1</scalefactor>
     
     <!-- The workload -->
     <terminals>2</terminals>
     <works>
         <work>
-          <time>20</time>
-          <rate>100</rate>
-          <weights>15,15,15,25,15,15</weights>
+          <time>300</time>
+          <rate>10000</rate>
+          <weights>50,5,15,10,10,10</weights>
         </work>
     </works>
-        
-    <!-- SmallBank Procedures declaration -->
+
+    <!-- YCSB Procedures declaration -->
     <transactiontypes>
         <transactiontype>
-            <name>Amalgamate</name>
+                <name>ReadRecord</name>
         </transactiontype>
         <transactiontype>
-            <name>Balance</name>
+                <name>InsertRecord</name>
         </transactiontype>
         <transactiontype>
-            <name>DepositChecking</name>
+                <name>ScanRecord</name>
         </transactiontype>
         <transactiontype>
-            <name>SendPayment</name>
+                <name>UpdateRecord</name>
         </transactiontype>
         <transactiontype>
-            <name>TransactSavings</name>
+                <name>DeleteRecord</name>
         </transactiontype>
         <transactiontype>
-            <name>WriteCheck</name>
+                <name>ReadModifyWriteRecord</name>
         </transactiontype>
     </transactiontypes>
 </parameters>

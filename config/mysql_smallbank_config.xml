@@ -2,9 +2,9 @@
 <parameters>
 
     <!-- Connection details -->
-    <dbtype>cockroachdb</dbtype>
-    <driver>org.postgresql.Driver</driver>
-    <DBUrl>jdbc:postgresql://localhost:26257/smallbank?reWriteBatchedInserts=true&amp;ApplicationName=smallbank</DBUrl>
+    <dbtype>mysql</dbtype>
+    <driver>com.mysql.jdbc.Driver</driver>
+    <DBUrl>jdbc:mysql://localhost:3306/smallbank?reWriteBatchedStatement=true</DBUrl>
     <username>root</username>
     <password></password>    
     <isolation>TRANSACTION_SERIALIZABLE</isolation>
@@ -12,7 +12,7 @@
     <scalefactor>1</scalefactor>
     
     <!-- The workload -->
-    <terminals>2</terminals>
+    <terminals>1</terminals>
     <works>
         <work>
           <time>20</time>

@@ -2,9 +2,9 @@
 <parameters>
 
     <!-- Connection details -->
-    <dbtype>cockroachdb</dbtype>
+    <dbtype>postgres</dbtype>
     <driver>org.postgresql.Driver</driver>
-    <DBUrl>jdbc:postgresql://localhost:26257/smallbank?reWriteBatchedInserts=true&amp;ApplicationName=smallbank</DBUrl>
+    <DBUrl>jdbc:postgresql://localhost:5432/smallbank?reWriteBatchedInserts=true&amp;ApplicationName=smallbank</DBUrl>
     <username>root</username>
     <password></password>    
     <isolation>TRANSACTION_SERIALIZABLE</isolation>

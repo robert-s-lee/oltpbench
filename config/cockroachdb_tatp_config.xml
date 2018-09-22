@@ -4,7 +4,7 @@
     <!-- Connection details -->
     <dbtype>cockroachdb</dbtype>
     <driver>org.postgresql.Driver</driver>
-    <DBUrl>jdbc:postgresql://127.0.0.1:26257/tatp?reWriteBatchedInserts=true&amp;ApplicationName=tatp</DBUrl>
+    <DBUrl>jdbc:postgresql://localhost:26257/tatp?reWriteBatchedInserts=true&amp;ApplicationName=tatp</DBUrl>
     <username>root</username>
     <password></password>
     <isolation>TRANSACTION_SERIALIZABLE</isolation>

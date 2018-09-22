@@ -2,9 +2,9 @@
 <parameters>
 
     <!-- Connection details -->
-    <dbtype>cockroachdb</dbtype>
-    <driver>org.postgresql.Driver</driver>
-    <DBUrl>jdbc:postgresql://localhost:26257/seats?reWriteBatchedInserts=true&amp;ApplicationName=seats</DBUrl>
+    <dbtype>mysql</dbtype>
+    <driver>com.mysql.jdbc.Driver</driver>
+    <DBUrl>jdbc:mysql://localhost:3306/seats?reWriteBatchedStatement=true</DBUrl>
     <username>root</username>
     <password></password>
     <isolation>TRANSACTION_SERIALIZABLE</isolation>

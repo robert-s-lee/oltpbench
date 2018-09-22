@@ -4,7 +4,7 @@
     <!-- Connection details -->
     <dbtype>cockroachdb</dbtype>
     <driver>org.postgresql.Driver</driver>
-    <DBUrl>jdbc:postgresql://127.0.0.1:26257/twitter?reWriteBatchedInserts=true</DBUrl>
+    <DBUrl>jdbc:postgresql://localhost:26257/twitter?reWriteBatchedInserts=true&amp;ApplicationName=twitter</DBUrl>
     <username>root</username>
     <password></password>
 

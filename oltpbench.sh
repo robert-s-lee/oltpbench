@@ -1,5 +1,8 @@
 
 # defaults
+multirow=true
+hostport=""
+dburl=localhost
 workload="voter"
 dbtype="cockroachdb"
 username="root"
@@ -10,57 +13,67 @@ scalefactor=1
 loaddata=""
 
 # options
-while getopts "d:lw:t:" opt; do
+while getopts "d:lp:u:s:t:w:" opt; do
   case "${opt}" in
     d)
       dbtype="${OPTARG}"
       ;;
+    i)
+      hostport="${OPTARG}"
+      ;;
     l)
       loaddata="1"
       ;;
-    w)
-      workload="${OPTARG}"
+    p)
+      password="${OPTARG}"
+      ;;
+    s)
+      scalefactor="${OPTARG}"
       ;;
     t)
       terminal="${OPTARG}"
+      ;;
+    u)
+      username="${OPTARG}"
+      ;;
+    w)
+      workload="${OPTARG}"
       ;;
     esac
 done
 shift $((OPTIND-1))
 
-# disable multirow for some workloads
-case ${workload} in 
-  smallbank)
-    multirow=false
-    ;;
-  *)
-    multirow=true
-    ;;
-esac
-
 # setup dtabase locally
 case $dbtype in 
   mysql)
+    if [ -z "${hostport}" ]; then 
+      hostport="localhost:3306"
+    fi
     driver="com.mysql.jdbc.Driver"
-    dburl="jdbc:mysql://localhost:3306/${workload}?reWriteBatchedStatement=${multirow}"
+    dburl="jdbc:mysql://${hostport}/${workload}?reWriteBatchedStatement=${multirow}"
     if [ ! -z "$loaddata" ]; then
-      mysql -u root -e "drop database if exists ${workload}; create database ${workload}"
+      mysql -u $username -e "drop database if exists ${workload}; create database ${workload}"
     fi
     ;;
   postgres)
-    driver="org.postgresql.Driver"
-    dburl="jdbc:postgresql://127.0.0.1/${workload}?reWriteBatchedInserts=${multirow}\&amp;ApplicationName=${workload}"
-    if [ ! -z "$loaddata" ]; then
-      psql -c " drop database if exists ${workload}"
-      psql -c " create database ${workload};"
+    if [ -z "${hostport}" ]; then 
+      hostport="localhost:5432"
     fi
-    username=rslee
+    driver="org.postgresql.Driver"
+    dburl="jdbc:postgresql://${hostport}/${workload}?reWriteBatchedInserts=${multirow}\&amp;ApplicationName=${workload}"
+    if [ ! -z "$loaddata" ]; then
+      psql -U $username -c " drop database if exists ${workload}"
+      psql -U $username -c " create database ${workload};"
+    fi
     ;;
   cockroachdb)
+    if [ -z "${hostport}" ]; then 
+      hostport="localhost:26257"
+    fi
     driver="org.postgresql.Driver"
-    dburl="jdbc:postgresql://127.0.0.1:26257/${workload}?reWriteBatchedInserts=${multirow}\&amp;ApplicationName=${workload}"
+    dburl="jdbc:postgresql://${hostport}/${workload}?reWriteBatchedInserts=${multirow}\&amp;ApplicationName=${workload}"
     if [ ! -z "$loaddata" ]; then
-      cockroach sql --insecure -e "drop database if exists ${workload} cascade; create database ${workload}"
+      cockroach sql --insecure -u $username -e "SET CLUSTER SETTING kv.transaction.max_intents_bytes = 1256000;SET CLUSTER SETTING kv.transaction.max_refresh_spans_bytes = 1256000;drop database if exists ${workload} cascade; create database ${workload}"
     fi
     ;;
   *)
@@ -79,12 +92,14 @@ sed  \
   -e  "s|<scalefactor>.*</scalefactor>|<scalefactor>${scalefactor}</scalefactor>|" \
   config/sample_${workload}_config.xml  > config/${dbtype}_${workload}_config.xml
 
+# crate and load data
 if [ ! -z "$loaddata" ]; then
-  time ./oltpbenchmark -b ${workload} -c config/${dbtype}_${workload}_config.xml --create=true --load=true -s 5 -v -o outputfile
+  time ./oltpbenchmark -b ${workload} -c config/${dbtype}_${workload}_config.xml --create=true --load=true -s 5 -v -o ${dbtype}.${workload}.load
 fi
 
+# run at various concurrency
 for t in ${terminal}; do
   sed -i.bak "s|<terminals>.*</terminals>|<terminals>$t</terminals>|" config/${dbtype}_${workload}_config.xml
-  time ./oltpbenchmark -b ${workload} -c config/${dbtype}_${workload}_config.xml --execute=true -s 5 -v -o outputfile
+  time ./oltpbenchmark -b ${workload} -c config/${dbtype}_${workload}_config.xml --execute=true -s 5 -v -o ${dbtype}.${workload}.run.$t
 done
 
