@@ -428,8 +428,14 @@ public class AuctionMarkWorker extends Worker<AuctionMarkBenchmark> {
         long i_num_bids = SQLUtil.getLong(row[col++]);          // i_num_bids
         Timestamp i_end_date = SQLUtil.getTimestamp(row[col++]);// i_end_date
         if (i_end_date == null) throw new RuntimeException("DJELLEL IS THE MAN! --> " + row[col-1] + " / " + row[col-1].getClass());
-        
-        Integer temp = SQLUtil.getInteger(row[col++]);
+      
+        Integer temp; // HACK cockroachdb int is 8 bytes instead of 4 resulting the field alternating from Int and Long
+        if (row[col] instanceof Long) {
+          // LOG.info("i_status " + row[col].getClass());
+          temp = (int) (long) SQLUtil.getLong(row[col++]);
+        } else {
+          temp = SQLUtil.getInteger(row[col++]);
+        }
         if (temp == null) throw new RuntimeException("DJELLEL IS STILL THE MAN! --> " + row[col-1] + " / " + row[col-1].getClass());
         ItemStatus i_status = ItemStatus.get(temp); // i_status
         

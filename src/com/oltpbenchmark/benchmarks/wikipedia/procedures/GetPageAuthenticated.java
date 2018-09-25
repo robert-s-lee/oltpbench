@@ -71,7 +71,7 @@ public class GetPageAuthenticated extends Procedure {
     // RUN
     // -----------------------------------------------------------------
 	
-    public Article run(Connection conn, boolean forSelect, String userIp, int userId, int nameSpace, String pageTitle) throws SQLException {
+    public Article run(Connection conn, boolean forSelect, String userIp, long userId, int nameSpace, String pageTitle) throws SQLException {
         // =======================================================
         // LOADING BASIC DATA: txn1
         // =======================================================
@@ -81,7 +81,7 @@ public class GetPageAuthenticated extends Procedure {
         String userText = userIp;
         PreparedStatement st = this.getPreparedStatement(conn, selectUser);
         if (userId > 0) {
-            st.setInt(1, userId);
+            st.setLong(1, userId);
             ResultSet rs = st.executeQuery();
             if (rs.next()) {
                 userText = rs.getString("user_name");
@@ -93,7 +93,7 @@ public class GetPageAuthenticated extends Procedure {
             // Fetch all groups the user might belong to (access control
             // information)
             st = this.getPreparedStatement(conn, selectGroup);
-            st.setInt(1, userId);
+            st.setLong(1, userId);
             rs = st.executeQuery();
             while (rs.next()) {
                 @SuppressWarnings("unused")
@@ -103,7 +103,7 @@ public class GetPageAuthenticated extends Procedure {
         }
 
         st = this.getPreparedStatement(conn, selectPage);
-        st.setInt(1, nameSpace);
+        st.setLong(1, nameSpace);
         st.setString(2, pageTitle);
         ResultSet rs = st.executeQuery();
 
@@ -111,12 +111,12 @@ public class GetPageAuthenticated extends Procedure {
             rs.close();
             throw new UserAbortException("INVALID page namespace/title:" + nameSpace + "/" + pageTitle);
         }
-        int pageId = rs.getInt("page_id");
+        long pageId = rs.getLong("page_id");
         assert !rs.next();
         rs.close();
 
         st = this.getPreparedStatement(conn, selectPageRestriction);
-        st.setInt(1, pageId);
+        st.setLong(1, pageId);
         rs = st.executeQuery();
         while (rs.next()) {
             byte[] pr_type = rs.getBytes(1);
@@ -127,7 +127,7 @@ public class GetPageAuthenticated extends Procedure {
         // check using blocking of a user by either the IP address or the
         // user_name
         st = this.getPreparedStatement(conn, selectIpBlocks);
-        st.setInt(1, userId);
+        st.setLong(1, userId);
         rs = st.executeQuery();
         while (rs.next()) {
             byte[] ipb_expiry = rs.getBytes(11);
@@ -136,16 +136,16 @@ public class GetPageAuthenticated extends Procedure {
         rs.close();
 
         st = this.getPreparedStatement(conn, selectPageRevision);
-        st.setInt(1, pageId);
-        st.setInt(2, pageId);
+        st.setLong(1, pageId);
+        st.setLong(2, pageId);
         rs = st.executeQuery();
         if (!rs.next()) {
             rs.close();
             throw new UserAbortException("no such revision: page_id:" + pageId + " page_namespace: " + nameSpace + " page_title:" + pageTitle);
         }
 
-        int revisionId = rs.getInt("rev_id");
-        int textId = rs.getInt("rev_text_id");
+        long revisionId = rs.getLong("rev_id");
+        long textId = rs.getLong("rev_text_id");
         assert !rs.next();
         rs.close();
 
@@ -155,7 +155,7 @@ public class GetPageAuthenticated extends Procedure {
         // "SELECT old_text,old_flags FROM `text` WHERE old_id = '"+textId+"' AND old_page = '"+pageId+"' LIMIT 1";
         // For now we run the original one, which works on the data we have
         st = this.getPreparedStatement(conn, selectText);
-        st.setInt(1, textId);
+        st.setLong(1, textId);
         rs = st.executeQuery();
         if (!rs.next()) {
             rs.close();

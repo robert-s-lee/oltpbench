@@ -62,7 +62,7 @@ public class WikipediaWorker extends Worker<WikipediaBenchmark> {
         Class<? extends Procedure> procClass = nextTransaction.getProcedureClass();
         boolean needUser = (procClass.equals(AddWatchList.class) || procClass.equals(RemoveWatchList.class) || procClass.equals(GetPageAuthenticated.class));
 
-        int userId;
+        long userId;
 
         do {
             // Check whether this should be an anonymous update
@@ -71,7 +71,7 @@ public class WikipediaWorker extends Worker<WikipediaBenchmark> {
             }
             // Otherwise figure out what user is updating this page
             else {
-                userId = z_users.nextInt();
+                userId = z_users.nextLong();
             }
             // Repeat if we need a user but we generated Anonymous
         } while (needUser && userId == WikipediaConstants.ANONYMOUS_USER_ID);
@@ -136,25 +136,25 @@ public class WikipediaWorker extends Worker<WikipediaBenchmark> {
         return proc.run(this.conn, forSelect, userIp, nameSpace, pageTitle);
     }
 
-    public Article getPageAuthenticated(boolean forSelect, String userIp, int userId, int nameSpace, String pageTitle) throws SQLException {
+    public Article getPageAuthenticated(boolean forSelect, String userIp, long userId, int nameSpace, String pageTitle) throws SQLException {
         GetPageAuthenticated proc = this.getProcedure(GetPageAuthenticated.class);
         assert (proc != null);
         return proc.run(this.conn, forSelect, userIp, userId, nameSpace, pageTitle);
     }
 
-    public void addToWatchlist(int userId, int nameSpace, String pageTitle) throws SQLException {
+    public void addToWatchlist(long userId, int nameSpace, String pageTitle) throws SQLException {
         AddWatchList proc = this.getProcedure(AddWatchList.class);
         assert (proc != null);
         proc.run(this.conn, userId, nameSpace, pageTitle);
     }
 
-    public void removeFromWatchlist(int userId, int nameSpace, String pageTitle) throws SQLException {
+    public void removeFromWatchlist(long userId, int nameSpace, String pageTitle) throws SQLException {
         RemoveWatchList proc = this.getProcedure(RemoveWatchList.class);
         assert (proc != null);
         proc.run(this.conn, userId, nameSpace, pageTitle);
     }
 
-    public void updatePage(String userIp, int userId, int nameSpace, String pageTitle) throws SQLException {
+    public void updatePage(String userIp, long userId, int nameSpace, String pageTitle) throws SQLException {
         Article a = this.getPageAnonymous(false, userIp, nameSpace, pageTitle);
         this.conn.commit();
 

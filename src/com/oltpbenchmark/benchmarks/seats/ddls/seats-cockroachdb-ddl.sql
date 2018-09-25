@@ -77,6 +77,7 @@ CREATE TABLE airport (
     AP_IATTR13     BIGINT,
     AP_IATTR14     BIGINT,
     AP_IATTR15     BIGINT,
+    index (AP_CO_ID),
     PRIMARY KEY (AP_ID)
 );
 
@@ -87,6 +88,7 @@ CREATE TABLE airport_distance (
     D_AP_ID0       BIGINT NOT NULL REFERENCES airport (AP_ID),
     D_AP_ID1       BIGINT NOT NULL REFERENCES airport (AP_ID),
     D_DISTANCE     FLOAT NOT NULL,
+    index (D_AP_ID1),
     PRIMARY KEY (D_AP_ID0, D_AP_ID1)
 );
 
@@ -116,6 +118,7 @@ CREATE TABLE airline (
     AL_IATTR13     BIGINT,
     AL_IATTR14     BIGINT,
     AL_IATTR15     BIGINT,
+    index (AL_CO_ID),
     PRIMARY KEY (AL_ID)
 );
 
@@ -167,6 +170,7 @@ CREATE TABLE customer (
     C_IATTR17      BIGINT,
     C_IATTR18      BIGINT,
     C_IATTR19      BIGINT,
+    index (C_BASE_AP_ID),
     PRIMARY KEY (C_ID)
 );
 
@@ -197,6 +201,7 @@ CREATE TABLE frequent_flyer (
     FF_IATTR13     BIGINT,
     FF_IATTR14     BIGINT,
     FF_IATTR15     BIGINT,
+   index (FF_AL_ID),
    PRIMARY KEY (FF_C_ID, FF_AL_ID)
 );
 CREATE INDEX IDX_FF_CUSTOMER_ID ON frequent_flyer (FF_C_ID_STR);
@@ -207,9 +212,12 @@ CREATE INDEX IDX_FF_CUSTOMER_ID ON frequent_flyer (FF_C_ID_STR);
 CREATE TABLE flight (
     F_ID            BIGINT NOT NULL,
     F_AL_ID         BIGINT NOT NULL REFERENCES airline (AL_ID),
+    index (F_AL_ID),
     F_DEPART_AP_ID  BIGINT NOT NULL REFERENCES airport (AP_ID),
+    index (F_DEPART_AP_ID),
     F_DEPART_TIME   TIMESTAMP NOT NULL,
     F_ARRIVE_AP_ID  BIGINT NOT NULL REFERENCES airport (AP_ID),
+    index (F_ARRIVE_AP_ID),
     F_ARRIVE_TIME   TIMESTAMP NOT NULL,
     F_STATUS        BIGINT NOT NULL,
     F_BASE_PRICE    FLOAT NOT NULL,
@@ -255,7 +263,9 @@ CREATE TABLE flight (
 CREATE TABLE reservation (
     R_ID            BIGINT NOT NULL,
     R_C_ID          BIGINT NOT NULL REFERENCES customer (C_ID),
+    index (R_C_ID),
     R_F_ID          BIGINT NOT NULL REFERENCES flight (F_ID),
+    index (R_F_ID),
     R_SEAT          BIGINT NOT NULL,
     R_PRICE         FLOAT NOT NULL,
     R_IATTR00       BIGINT,

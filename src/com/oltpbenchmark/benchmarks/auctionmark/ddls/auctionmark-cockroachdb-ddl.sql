@@ -192,8 +192,7 @@ CREATE TABLE item (
     i_num_comments      BIGINT,
     i_start_date        TIMESTAMP,
     i_end_date          TIMESTAMP,
-    i_status            INT DEFAULT 0,  
--- int is 4 bytes
+    i_status            INT4 DEFAULT 0,  
     i_created           TIMESTAMP,
     i_updated           TIMESTAMP,
     i_iattr0            BIGINT DEFAULT NULL,

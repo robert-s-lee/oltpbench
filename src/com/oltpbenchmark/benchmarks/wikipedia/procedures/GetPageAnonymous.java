@@ -69,18 +69,18 @@ public class GetPageAnonymous extends Procedure {
 	    int param = 1;
 	    
 		PreparedStatement st = this.getPreparedStatement(conn, selectPage);
-        st.setInt(param++, pageNamespace);
+        st.setLong(param++, pageNamespace);
         st.setString(param++, pageTitle);
         ResultSet rs = st.executeQuery();
         if (!rs.next()) {
             String msg = String.format("Invalid Page: Namespace:%d / Title:--%s--", pageNamespace, pageTitle);
             throw new UserAbortException(msg);
         }
-        int pageId = rs.getInt(1);
+        long pageId = rs.getLong(1);
         rs.close();
 
         st = this.getPreparedStatement(conn, selectPageRestriction);
-        st.setInt(1, pageId);
+        st.setLong(1, pageId);
         rs = st.executeQuery();
         while (rs.next()) {
             byte[] pr_type = rs.getBytes(1);
@@ -100,8 +100,8 @@ public class GetPageAnonymous extends Procedure {
         rs.close();
 
         st = this.getPreparedStatement(conn, selectPageRevision);
-        st.setInt(1, pageId);
-        st.setInt(2, pageId);
+        st.setLong(1, pageId);
+        st.setLong(2, pageId);
         rs = st.executeQuery();
         if (!rs.next()) {
             String msg = String.format("Invalid Page: Namespace:%d / Title:--%s-- / PageId:%d",
@@ -109,8 +109,8 @@ public class GetPageAnonymous extends Procedure {
             throw new UserAbortException(msg);
         }
 
-        int revisionId = rs.getInt("rev_id");
-        int textId = rs.getInt("rev_text_id");
+        long revisionId = rs.getLong("rev_id");
+        long textId = rs.getLong("rev_text_id");
         assert !rs.next();
         rs.close();
 
@@ -120,7 +120,7 @@ public class GetPageAnonymous extends Procedure {
         // "SELECT old_text,old_flags FROM `text` WHERE old_id = '"+textId+"' AND old_page = '"+pageId+"' LIMIT 1";
         // For now we run the original one, which works on the data we have
         st = this.getPreparedStatement(conn, selectText);
-        st.setInt(1, textId);
+        st.setLong(1, textId);
         rs = st.executeQuery();
         if (!rs.next()) {
             String msg = "No such text: " + textId + " for page_id:" + pageId + " page_namespace: " + pageNamespace + " page_title:" + pageTitle;

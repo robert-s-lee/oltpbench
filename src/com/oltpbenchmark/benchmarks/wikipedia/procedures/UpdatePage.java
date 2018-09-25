@@ -128,10 +128,10 @@ public class UpdatePage extends Procedure {
     // RUN
     // -----------------------------------------------------------------
 	
-	public void run(Connection conn, int textId, int pageId,
+	public void run(Connection conn, long textId, long pageId,
 	                                 String pageTitle, String pageText, int pageNamespace,
-	                                 int userId, String userIp, String userText,
-	                                 int revisionId, String revComment, int revMinorEdit) throws SQLException {
+	                                 long userId, String userIp, String userText,
+	                                 long revisionId, String revComment, int revMinorEdit) throws SQLException {
 
 	    boolean adv;
 	    PreparedStatement ps = null;
@@ -142,7 +142,7 @@ public class UpdatePage extends Procedure {
 	    // INSERT NEW TEXT
 		ps = this.getPreparedStatementReturnKeys(conn, insertText, new int[]{1});
 		param = 1;
-		ps.setInt(param++, pageId);
+		ps.setLong(param++, pageId);
 		ps.setString(param++, pageText);
 		ps.setString(param++, "utf-8");  //This is an error
 //		ps.execute();
@@ -151,29 +151,29 @@ public class UpdatePage extends Procedure {
 		rs = ps.getGeneratedKeys();
 		adv = rs.next();
 		assert(adv) : "Problem inserting new tuples in table text";
-		int nextTextId = rs.getInt(1);
+		long nextTextId = rs.getLong(1);    // HACK COCKROACHDB that returns 64bits 
 		rs.close();
 		assert(nextTextId >= 0) : "Invalid nextTextId (" + nextTextId + ")";
 
 		// INSERT NEW REVISION
 		ps = this.getPreparedStatementReturnKeys(conn, insertRevision, new int[]{1});
 		param = 1;
-		ps.setInt(param++, pageId);       // rev_page
-		ps.setInt(param++, nextTextId);   // rev_text_id
+		ps.setLong(param++, pageId);       // rev_page
+		ps.setLong(param++, nextTextId);   // rev_text_id
 		ps.setString(param++, revComment);// rev_comment
 		ps.setInt(param++, revMinorEdit); // rev_minor_edit // this is an error
-		ps.setInt(param++, userId);       // rev_user
+		ps.setLong(param++, userId);       // rev_user
 		ps.setString(param++, userText);  // rev_user_text
 		ps.setString(param++, timestamp); // rev_timestamp
 		ps.setInt(param++, 0);            // rev_deleted //this is an error
 		ps.setInt(param++, pageText.length()); // rev_len
-		ps.setInt(param++, revisionId);   // rev_parent_id // this is an error
+		ps.setLong(param++, revisionId);   // rev_parent_id // this is an error
 //	    ps.execute();
 		execute(conn, ps);
 		
 		rs = ps.getGeneratedKeys();
 		adv = rs.next();
-		int nextRevId = rs.getInt(1);
+		long nextRevId = rs.getLong(1);
 		rs.close();
 		assert(nextRevId >= 0) : "Invalid nextRevID (" + nextRevId + ")";
 
@@ -182,10 +182,10 @@ public class UpdatePage extends Procedure {
 		// anyway
 		ps = this.getPreparedStatement(conn, updatePage);
 		param = 1;
-		ps.setInt(param++, nextRevId);
+		ps.setLong(param++, nextRevId);
 		ps.setString(param++, timestamp);
 		ps.setInt(param++, pageText.length());
-		ps.setInt(param++, pageId);
+		ps.setLong(param++, pageId);
 //		int numUpdatePages = ps.executeUpdate();
 //		assert(numUpdatePages == 1) : "WE ARE NOT UPDATING the page table!";
 		execute(conn, ps);
@@ -202,12 +202,12 @@ public class UpdatePage extends Procedure {
 		ps.setString(param++, pageTitle);     // rc_title
 		ps.setInt(param++, 0);                // rc_type
 		ps.setInt(param++, 0);                // rc_minor
-		ps.setInt(param++, pageId);           // rc_cur_id
-		ps.setInt(param++, userId);           // rc_user
+		ps.setLong(param++, pageId);           // rc_cur_id
+		ps.setLong(param++, userId);           // rc_user
 		ps.setString(param++, userText);      // rc_user_text
 		ps.setString(param++, revComment);    // rc_comment
-		ps.setInt(param++, nextTextId);       // rc_this_oldid
-		ps.setInt(param++, textId);           // rc_last_oldid
+		ps.setLong(param++, nextTextId);       // rc_this_oldid
+		ps.setLong(param++, textId);           // rc_last_oldid
 		ps.setInt(param++, 0);                // rc_bot
 		ps.setInt(param++, 0);                // rc_moved_to_ns
 		ps.setString(param++, "");            // rc_moved_to_title
@@ -227,7 +227,7 @@ public class UpdatePage extends Procedure {
 		param = 1;
 		ps.setString(param++, pageTitle);
 		ps.setInt(param++, pageNamespace);
-		ps.setInt(param++, userId);
+		ps.setLong(param++, userId);
 		rs = ps.executeQuery();
 
 		ArrayList<Integer> wlUser = new ArrayList<Integer>();
@@ -286,25 +286,25 @@ public class UpdatePage extends Procedure {
 		ps = this.getPreparedStatement(conn, insertLogging);
 		param = 1;
 		ps.setString(param++, timestamp);
-		ps.setInt(param++, userId);
+		ps.setLong(param++, userId);
 		ps.setString(param++, pageTitle);
 		ps.setInt(param++, pageNamespace);
 		ps.setString(param++, userText);
-		ps.setInt(param++, pageId);
+		ps.setLong(param++, pageId);
 		ps.setString(param++, String.format("%d\n%d\n%d", nextRevId, revisionId, 1));
 //		ps.executeUpdate();
 		execute(conn, ps);
 
 		ps = this.getPreparedStatement(conn, updateUserEdit);
 		param = 1;
-		ps.setInt(param++, userId);
+		ps.setLong(param++, userId);
 //		ps.executeUpdate();
 		execute(conn, ps);
 		
 		ps = this.getPreparedStatement(conn, updateUserTouched);
 		param = 1;
 		ps.setString(param++, timestamp);
-		ps.setInt(param++, userId);
+		ps.setLong(param++, userId);
 //		ps.executeUpdate();	    		
 		execute(conn, ps);
 	}	

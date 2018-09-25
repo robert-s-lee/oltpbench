@@ -183,9 +183,12 @@ INDEX IDX_USER_TIMESTAMP (rev_user,rev_timestamp),
 INDEX IDX_USERTEXT_TIMESTAMP (rev_user_text,rev_timestamp)
 );
 
+-- 10804 existing entires are preloaded
+CREATE SEQUENCE old_id_seq START 1000000;
+
 DROP TABLE IF EXISTS text;
 CREATE TABLE text (
-  old_id serial,
+  old_id INT DEFAULT nextval('old_id_seq'),
   old_text text NOT NULL,
   old_flags varchar(255) NOT NULL,
   old_page int DEFAULT NULL,
