@@ -16,6 +16,7 @@
 
 package com.oltpbenchmark.benchmarks.linkbench.procedures;
 
+import java.sql.Array;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -38,9 +39,9 @@ public class GetLink extends Procedure{
             " visibility, data, time, " +
             " version from linktable "+
             " where id1 = ? and link_type = ? " +
-            " and id2 in (?)"
+            " and id2 in (LONG_IN_LIST)"
     );
-    
+
     public Link[] run(Connection conn, long id1, long link_type, long[] id2s) throws SQLException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("getLink : " + id1 + " " + link_type + " " + id2s);
@@ -55,11 +56,18 @@ public class GetLink extends Procedure{
             }
             ids+=id2;
           }
+
+        getLinkStmt.setSQL(getLinkStmt.getSQL().replaceFirst("LONG_IN_LIST", ids));
+
         if(stmt == null)
           stmt = this.getPreparedStatement(conn, getLinkStmt);
+        
         stmt.setLong(1, id1);          
         stmt.setLong(2, link_type);          
-        stmt.setString(3, ids);          
+        // stmt.setArray(3, array); BUG in the original code...         
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("getLink : " + stmt);
+        }
         ResultSet rs= stmt.executeQuery();
         // Get the row count to allocate result array
         assert(rs.getType() != ResultSet.TYPE_FORWARD_ONLY);

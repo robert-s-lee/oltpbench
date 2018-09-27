@@ -7,7 +7,7 @@ CREATE TABLE `linktable` (
   `id2` bigint(20) unsigned NOT NULL DEFAULT '0',
   `link_type` bigint(20) unsigned NOT NULL DEFAULT '0',
   `visibility` tinyint(3) NOT NULL DEFAULT '0',
-  `data` varchar(255) NOT NULL DEFAULT '',
+  `data` varbinary(255) NOT NULL DEFAULT '',
   `time` bigint(20) unsigned NOT NULL DEFAULT '0',
   `version` int(11) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id1`,`id2`,`link_type`),
@@ -29,6 +29,6 @@ CREATE TABLE `nodetable` (
   `type` int(10) unsigned NOT NULL,
   `version` bigint(20) unsigned NOT NULL,
   `time` int(10) unsigned NOT NULL,
-  `data` mediumtext NOT NULL,
+  `data` varbinary(1024) NOT NULL,
   PRIMARY KEY(`id`)
 );

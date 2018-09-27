@@ -40,7 +40,7 @@ public class AddLink extends Procedure{
     public final SQLStmt insertNoCount = new SQLStmt(
             "INSERT INTO linktable " +
             "(id1, id2, link_type, visibility, data, time, version) VALUES " +
-            "(?,?,?,?,HEXDATA,?,?) ON DUPLICATE KEY UPDATE visibility = VALUES(visibility)"
+            "(?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE visibility = VALUES(visibility)"
     );
 
     public final SQLStmt updateCount = new SQLStmt(
@@ -53,7 +53,7 @@ public class AddLink extends Procedure{
 
     public final SQLStmt updateData = new SQLStmt(
             "UPDATE linktable SET " +
-            "visibility = ? , data = HEXDATA , time = ? , version = ? " + 
+            "visibility = ? , data = ? , time = ? , version = ? " + 
             "WHERE id1 = ? AND id2 = ? AND link_type = ?"
     );
 
@@ -65,7 +65,7 @@ public class AddLink extends Procedure{
         }
         
         //gross hack
-        insertNoCount.setSQL(insertNoCount.getSQL().replaceFirst("HEXDATA", StringUtil.stringLiteral(l.data)));
+        //insertNoCount.setSQL(insertNoCount.getSQL().replaceFirst("HEXDATA", StringUtil.stringLiteral(l.data)));
         
         // if the link is already there then update its visibility
         // only update visibility; skip updating time, version, etc. 
@@ -76,8 +76,9 @@ public class AddLink extends Procedure{
         stmt1.setLong(2, l.id2);          
         stmt1.setLong(3, l.link_type);          
         stmt1.setByte(4, l.visibility);              
-        stmt1.setLong(5, l.time);
-        stmt1.setInt(6, l.version);
+        stmt1.setBytes(5, l.data);
+        stmt1.setLong(6, l.time);
+        stmt1.setInt(7, l.version);
 
         if (LOG.isTraceEnabled()) {
             LOG.trace(insertNoCount+ " " +StringUtil.stringLiteral(l.data));
@@ -162,16 +163,17 @@ public class AddLink extends Procedure{
 
         if (update_data) {
             //gross hack
-            updateData.setSQL(updateData.getSQL().replaceFirst("HEXDATA", StringUtil.stringLiteral(l.data)));
+            //updateData.setSQL(updateData.getSQL().replaceFirst("HEXDATA", StringUtil.stringLiteral(l.data)));
             // query to update link data (the first query only updates visibility)
             if(stmt3 ==null)
                 stmt3 = this.getPreparedStatement(conn, updateData);
             stmt3.setByte(1, l.visibility);          
-            stmt3.setLong(2, l.time); 
-            stmt3.setInt(3, l.version); 
-            stmt3.setLong(4, l.id1);          
-            stmt3.setLong(5, l.id2);          
-            stmt3.setLong(6, l.link_type);    
+            stmt3.setBytes(2, l.data);          
+            stmt3.setLong(3, l.time); 
+            stmt3.setInt(4, l.version); 
+            stmt3.setLong(5, l.id1);          
+            stmt3.setLong(6, l.id2);          
+            stmt3.setLong(7, l.link_type);    
             if (LOG.isTraceEnabled()) {
                 LOG.trace(updateData);
             }

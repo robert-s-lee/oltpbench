@@ -35,7 +35,7 @@ public class UpdateNode extends Procedure{
     
     public final SQLStmt updateNodeStmt = new SQLStmt(
             "UPDATE nodetable " +
-            "SET version= ? , time= ? , data= HEXDATA " +
+            "SET version= ? , time= ? , data= ? " +
             "WHERE id= ? AND type= ?"
     );
     
@@ -43,15 +43,21 @@ public class UpdateNode extends Procedure{
         if (LOG.isDebugEnabled()) {
             LOG.debug("updateNode : " + node.type + "." + node.version + "." + node.time);
         }
-        //gross hack
-        updateNodeStmt.setSQL(updateNodeStmt.getSQL().replaceFirst("HEXDATA", StringUtil.stringLiteral(node.data)));
       
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("updateNode : " + updateNodeStmt.getSQL());
+        }
+
         if(stmt == null)
           stmt = this.getPreparedStatement(conn, updateNodeStmt);
         stmt.setLong(1, node.version);          
         stmt.setInt(2, node.time);                   
-        stmt.setLong(3, node.id);
-        stmt.setInt(4, node.type);
+        stmt.setBytes(3, node.data);                   
+        stmt.setLong(4, node.id);
+        stmt.setInt(5, node.type);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("updateNode : " + stmt);
+        }
         int rows = stmt.executeUpdate();
         conn.commit();
         if (rows == 1) return true;

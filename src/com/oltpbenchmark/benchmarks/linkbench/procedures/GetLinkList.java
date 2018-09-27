@@ -50,7 +50,8 @@ public class GetLinkList extends Procedure{
             long minTimestamp, long maxTimestamp,
             int offset, int limit) throws SQLException {
         if(stmt == null)
-            stmt = this.getPreparedStatement(conn, getLinkListsStmt);
+            stmt = this.getPreparedStatement(conn, getLinkListsStmt, ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_UPDATABLE);
+        stmt.setFetchDirection(ResultSet.FETCH_REVERSE);
         stmt.setLong(1, id1);          
         stmt.setLong(2, link_type);          
         stmt.setLong(3, minTimestamp);          

@@ -35,7 +35,7 @@ public class AddNode extends Procedure{
     public final SQLStmt addNode = new SQLStmt(
             "INSERT INTO nodetable " +
             "(type, version, time, data) " +
-            "VALUES (?,?,?,HEXDATA)"
+            "VALUES (?,?,?,?)"
     );
     
     private PreparedStatement stmt= null;
@@ -46,8 +46,6 @@ public class AddNode extends Procedure{
         if (LOG.isDebugEnabled()) {
             LOG.debug("addNode : " + node.type + "." + node.version + "." + node.time);
         }
-        //gross hack
-        addNode.setSQL(addNode.getSQL().replaceFirst("HEXDATA", StringUtil.stringLiteral(node.data)));
       
         if(stmt == null)
             stmt = this.getPreparedStatementReturnKeys(conn, addNode, new int[]{1});
@@ -55,7 +53,8 @@ public class AddNode extends Procedure{
         stmt.setLong(1, node.type);          
         stmt.setLong(2, node.version);          
         stmt.setInt(3, node.time);
-        stmt.executeUpdate();
+        stmt.setBytes(4, node.data);
+        stmt.execute();
         conn.commit();
         //Need to check how many ideas were inserted
         ResultSet rs = stmt.getGeneratedKeys();

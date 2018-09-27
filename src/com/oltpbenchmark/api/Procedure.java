@@ -20,12 +20,14 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+
 
 import org.apache.log4j.Logger;
 
@@ -137,7 +139,7 @@ public abstract class Procedure {
             }
             // They don't care about keys
             else {
-                pStmt = conn.prepareStatement(stmt.getSQL());
+                pStmt = conn.prepareStatement(stmt.getSQL(), ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_UPDATABLE);
             }
             this.prepardStatements.put(stmt, pStmt);
         }

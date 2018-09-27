@@ -16,7 +16,7 @@ gawk -F, '{sum["total"]+=$2;cnt["total"]++;} ENDFILE {n=split(FILENAME,f,"."); p
 # get individual Txn performance
 # Transaction Type Index,Transaction Name,Start Time (microseconds),Latency (microseconds),Worker Id (start number),Phase Id (index in config file)
 # 4,GetPageAnonymous,1537666721.141450,105422,0,0
-gawk -F, '{sum[$2]+=$4;cnt[$2]++;} ENDFILE {n=split(FILENAME,f,"."); for (i in sum) {printf f[1] "," f[2] "," f[3] "," f[4] ","; if (n==5) {printf "1,localhost";} else {printf f[5] "," f[6];}; print "," i "," sum[i]/cnt[i] "," cnt[i];} delete sum; delete cnt; }' *.csv > procedure.csv
+gawk -F, '{sum[$2]+=$4;cnt[$2]++;} ENDFILE {n=split(FILENAME,f,"."); for (i in sum) {printf f[1] "," f[2] "," f[3] "," f[4] ","; if (n==5) {printf "1,localhost";} else {printf f[5] "," f[6];}; print "," i "," sum[i] "," cnt[i];} delete sum; delete cnt; }' *.csv > procedure.csv
 
 # $ARGV contains the name of the file currently opened by the Diamond Operator
 perl -e 'while (<>){print if (/public.+new.+SQLStmt.*\(/../\)\;/);}' */procedures/*.java

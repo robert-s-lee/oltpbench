@@ -1,6 +1,13 @@
 <?xml version="1.0"?>
 <dialects>
     <dialect type="cockroachdb">
+        <procedure name="AddNode">
+            <statement name="addNode">
+            INSERT INTO nodetable
+            (type, version, time, data) 
+            VALUES (?,?,?,?) returning id
+            </statement>
+        </procedure>
         <procedure name="GetLinkList">
             <statement name="getLinkListsStmt">
                   select id1, id2, link_type,
@@ -11,8 +18,42 @@
                     and time &lt;= ?
                     and visibility = ?
                     order by time desc
-                    limit ? offset ?
+                    offset ? limit ?
+            </statement>
+        </procedure>
+        <procedure name="AddLink">
+            <statement name="insertNoCount">
+            INSERT INTO linktable 
+            (id1, id2, link_type, visibility, data, time, version) VALUES 
+            (?,?,?,?,?,?,?) ON conflict (id1,id2,link_type) do UPDATE set visibility = excluded.visibility
+            </statement>
+
+            <statement name="updateCount">
+            INSERT INTO counttable 
+            (id, link_type, count, time, version) 
+            VALUES (?, ?, ?, ?, 0) 
+            ON conflict (id, link_type) do UPDATE set
+            count = counttable.count + ? , version = counttable.version + 1 , time = ?
+            </statement>
+        </procedure>
+        <procedure name="DeleteLink">
+            <statement name="selectLink">
+            SELECT visibility
+                       FROM linktable
+                       WHERE id1 = ?
+                       AND id2 = ?
+                       AND link_type = ?
+            </statement>
+            <statement name="updateLink">
+            INSERT INTO counttable
+                        (id, link_type, count, time, version) 
+                        VALUES (?, ?, 0, ?, 0) 
+                        ON conflict (id, link_type) do update set 
+                        count = IF (counttable.count = 0, 0, counttable.count - 1)
+                        , time = ?, version = counttable.version + 1
             </statement>
         </procedure>
    </dialect>
 </dialects> 
+
+

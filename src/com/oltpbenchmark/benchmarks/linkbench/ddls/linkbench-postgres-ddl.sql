@@ -10,9 +10,10 @@ CREATE TABLE linktable (
   data bytea NOT NULL,
   time bigint NOT NULL,
   version int NOT NULL,
-  index id1_type (id1,link_type,visibility,time,version,data),
   PRIMARY KEY (id1,id2,link_type)
 );
+create index id1_type on linktable (id1,link_type,visibility,time,version,data);
+
 CREATE TABLE counttable (
   id bigint NOT NULL,
   link_type bigint  NOT NULL,
@@ -30,3 +31,4 @@ CREATE TABLE nodetable (
   data bytea NOT NULL,
   PRIMARY KEY(id)
 );
+

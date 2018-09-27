@@ -69,6 +69,23 @@ case $dbtype in
       psql -h $host -p $port -U $username -c " drop database if exists ${workload}"
       psql -h $host -p $port -U $username -c " create database ${workload};"
     fi
+
+    if [[ ("${workload}" == "linkbench") &&  ("${dbtype}" == "postgres") ]]; then
+      psql -h $host -p $port -U $username -d ${workload} <<'EOF'
+CREATE OR REPLACE FUNCTION if(boolean, anyelement, anyelement)
+   RETURNS anyelement AS $$
+BEGIN
+    CASE WHEN ($1) THEN
+    RETURN ($2);
+    ELSE
+    RETURN ($3);
+    END CASE;
+    EXCEPTION WHEN division_by_zero THEN
+    RETURN ($3);
+END;
+$$ LANGUAGE plpgsql;
+EOF
+    fi
     ;;
   cockroachdb)
     port="26257"
