@@ -8,7 +8,7 @@ dbtype="cockroachdb"
 username="root"
 password=""
 isolation="TRANSACTION_SERIALIZABLE"
-terminal="8 16"
+terminal="32 16 8 4 2 1"
 scalefactor=1
 loaddata=""
 
@@ -96,7 +96,7 @@ EOF
     driver="org.postgresql.Driver"
     dburl="jdbc:postgresql://${hostport}/${workload}?reWriteBatchedInserts=${multirow}\&amp;ApplicationName=${workload}"
     if [ ! -z "$loaddata" ]; then
-      cockroach sql --insecure --host ${host} --port ${port} -u $username -e "SET CLUSTER SETTING kv.transaction.max_intents_bytes = 1256000;SET CLUSTER SETTING kv.transaction.max_refresh_spans_bytes = 1256000;drop database if exists ${workload} cascade; create database ${workload}"
+      cockroach sql --insecure --url "postgresql://$username@$host:$port" -e "SET CLUSTER SETTING kv.transaction.max_intents_bytes = 1256000;SET CLUSTER SETTING kv.transaction.max_refresh_spans_bytes = 1256000; SET CLUSTER SETTING kv.allocator.load_based_rebalancing = 'leases and replicas'; drop database if exists ${workload} cascade; create database ${workload}"
     fi
     ;;
   *)
@@ -124,7 +124,8 @@ fi
 for t in ${terminal}; do
 
   if [[ ("${workload}" == "epinions") &&  ("${dbtype}" == "postgres") && ($t -gt 1) ]]; then
-    echo 1
+    echo "${dbtype} cannot run ${workload} at concurrency $t:  could not serialize access due to read/write dependencies among transactions"
+    continue
   fi
 
   sed -i.bak "s|<terminals>.*</terminals>|<terminals>$t</terminals>|" config/${dbtype}_${workload}_config.xml

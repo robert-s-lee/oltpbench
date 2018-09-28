@@ -14,7 +14,7 @@
 
 
 dbtype="cockroachdb mysql postgres" #
-workload="auctionmark seats tpcc tatp twitter voter epinions sibench smallbank ycsb wikipedia"   
+workload="auctionmark linkbench seats tpcc tatp twitter voter epinions sibench smallbank ycsb wikipedia resourcestresser"   
 for d in $dbtype; do
 for w in $workload; do
 ./oltpbench.sh -i mbdlan -d $d -w $w -l 

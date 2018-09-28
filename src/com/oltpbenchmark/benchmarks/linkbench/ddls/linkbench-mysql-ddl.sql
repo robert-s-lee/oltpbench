@@ -29,6 +29,6 @@ CREATE TABLE `nodetable` (
   `type` int(10) unsigned NOT NULL,
   `version` bigint(20) unsigned NOT NULL,
   `time` int(10) unsigned NOT NULL,
-  `data` varbinary(1024) NOT NULL,
+  `data` varbinary(10240) NOT NULL,
   PRIMARY KEY(`id`)
 );
