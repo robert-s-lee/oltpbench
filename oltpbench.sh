@@ -133,8 +133,8 @@ for t in ${terminal}; do
 
   cat config/$cfgfile | sed "s|<terminals>.*</terminals>|<terminals>$t</terminals>|" > /tmp/$cfgfile.$$
 
-  rm $logfile.res 2>/dev/null
-  rm $logfile.csv 2>/dev/null
+  rm results/$logfile.res 2>/dev/null
+  rm results/$logfile.csv 2>/dev/null
 
   time ./oltpbenchmark -b ${workload} -c /tmp/$cfgfile.$$ --execute=true -s 5 -v -o $logfile
 
