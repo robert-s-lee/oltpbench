@@ -128,8 +128,18 @@ for t in ${terminal}; do
     continue
   fi
 
-  sed -i.bak "s|<terminals>.*</terminals>|<terminals>$t</terminals>|" config/${dbtype}_${workload}_config.xml
-  time ./oltpbenchmark -b ${workload} -c config/${dbtype}_${workload}_config.xml --execute=true -s 5 -v -o ${dbtype}.${workload}.run.${t}.${scalefactor}.${host}
+  logfile=${dbtype}.${workload}.run.${t}.${scalefactor}.${host}
+  cfgfile=${dbtype}_${workload}_config.xml
+
+  cat config/$cfgfile | sed "s|<terminals>.*</terminals>|<terminals>$t</terminals>|" > /tmp/$cfgfile.$$
+
+  rm $logfile.res 2>/dev/null
+  rm $logfile.csv 2>/dev/null
+
+  time ./oltpbenchmark -b ${workload} -c /tmp/$cfgfile.$$ --execute=true -s 5 -v -o $logfile
+
+  rm /tmp/$cfgfile.$$
+
   # don't re-run workloads that cannot return once run
   case $workload in 
     auctionmark)
