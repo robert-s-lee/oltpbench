@@ -11,9 +11,12 @@ isolation="TRANSACTION_SERIALIZABLE"
 terminal="32 16 8 4 2 1"
 scalefactor=1
 loaddata=""
+rate=unlimited
+time=60
+extern=/Users/rslee/data/cockroach-data/1/extern
 
 # options
-while getopts "d:i:lp:u:s:t:w:" opt; do
+while getopts "d:i:lm:p:r:u:s:t:w:" opt; do
   case "${opt}" in
     d)
       dbtype="${OPTARG}"
@@ -24,8 +27,14 @@ while getopts "d:i:lp:u:s:t:w:" opt; do
     l)
       loaddata="1"
       ;;
+    m)
+      time="${OPTARG}"
+      ;;
     p)
       password="${OPTARG}"
+      ;;
+    r)
+      rate="${OPTARG}"
       ;;
     s)
       scalefactor="${OPTARG}"
@@ -43,6 +52,11 @@ while getopts "d:i:lp:u:s:t:w:" opt; do
 done
 shift $((OPTIND-1))
 
+#
+#if [ `which caddy` ]; then
+#  caddy -root $extern "upload / {" "to \"$extern\"" "yes_without_tls" "}" &
+#fi
+  
 # setup dtabase locally
 case $dbtype in 
   mysql)
@@ -72,18 +86,18 @@ case $dbtype in
 
     if [[ ("${workload}" == "linkbench") &&  ("${dbtype}" == "postgres") ]]; then
       psql -h $host -p $port -U $username -d ${workload} <<'EOF'
-CREATE OR REPLACE FUNCTION if(boolean, anyelement, anyelement)
-   RETURNS anyelement AS $$
-BEGIN
-    CASE WHEN ($1) THEN
-    RETURN ($2);
-    ELSE
-    RETURN ($3);
-    END CASE;
-    EXCEPTION WHEN division_by_zero THEN
-    RETURN ($3);
-END;
-$$ LANGUAGE plpgsql;
+        CREATE OR REPLACE FUNCTION if(boolean, anyelement, anyelement)
+           RETURNS anyelement AS $$
+        BEGIN
+            CASE WHEN ($1) THEN
+            RETURN ($2);
+            ELSE
+            RETURN ($3);
+            END CASE;
+            EXCEPTION WHEN division_by_zero THEN
+            RETURN ($3);
+        END;
+        $$ LANGUAGE plpgsql;
 EOF
     fi
     ;;
@@ -96,13 +110,16 @@ EOF
     driver="org.postgresql.Driver"
     dburl="jdbc:postgresql://${hostport}/${workload}?reWriteBatchedInserts=${multirow}\&amp;ApplicationName=${workload}"
     if [ ! -z "$loaddata" ]; then
-      cockroach sql --insecure --url "postgresql://$username@$host:$port" -e "SET CLUSTER SETTING kv.transaction.max_intents_bytes = 1256000;SET CLUSTER SETTING kv.transaction.max_refresh_spans_bytes = 1256000; SET CLUSTER SETTING kv.allocator.load_based_rebalancing = 'leases and replicas'; drop database if exists ${workload} cascade; create database ${workload}"
+      cockroach sql --insecure --url "postgresql://$username@$host:$port" -e "SET CLUSTER SETTING kv.transaction.max_intents_bytes = 1256000;SET CLUSTER SETTING kv.transaction.max_refresh_spans_bytes = 1256000; SET CLUSTER SETTING kv.allocator.load_based_rebalancing = 'leases and replicas';drop database if exists ${workload} cascade;$COCKROACH_DEV_LICENSE"
     fi
     ;;
   *)
     echo "unknown dbtype ${dbtype}"
   ;;
 esac
+
+backupfile=${dbtype}.${workload}.${scalefactor}
+cfgfile=${dbtype}_${workload}_config.xml
 
 # prepare config
 sed  \
@@ -113,32 +130,67 @@ sed  \
   -e  "s|<password>.*</password>|<password>${password}</password>|" \
   -e  "s|<isolation>.*</isolation>|<isolation>${isolation}</isolation>|" \
   -e  "s|<scalefactor>.*</scalefactor>|<scalefactor>${scalefactor}</scalefactor>|" \
-  config/sample_${workload}_config.xml  > config/${dbtype}_${workload}_config.xml
+  -e  "s|<time>.*</time>|<time>${time}</time>|" \
+  -e  "s|<rate>.*</rate>|<rate>${rate}</rate>|" \
+  config/sample_${workload}_config.xml > /tmp/$cfgfile
 
-# crate and load data
+# create and load data
 if [ ! -z "$loaddata" ]; then
-  time ./oltpbenchmark -b ${workload} -c config/${dbtype}_${workload}_config.xml --create=true --load=true -s 5 -v -o ${dbtype}.${workload}.load.${host}
+  case $dbtype in 
+    mysql)
+        if [ -d $extern/$backupfile ]; then
+          echo "Loading $extern/$backupfile/$backupfile.sql"
+          mysql -h ${host} -P ${port} -u $username -B ${workload} < $extern/$backupfile/$backupfile.sql
+        else
+          time ./oltpbenchmark -b ${workload} -c /tmp/$cfgfile --create=true --load=true -s 5 -v -o ${dbtype}.${workload}.load.${host}
+          mkdir $extern/$backupfile
+          mysqldump -h ${host} -P ${port} -u $username  -e ${workload} >  $extern/$backupfile/$backupfile.sql
+        fi
+      ;;
+    postgres)
+        if [ -d $extern/$backupfile ]; then
+          echo "Loading $extern/$backupfile/$backupfile"
+          pg_restore -d ${workload} $extern/$backupfile 
+        else
+          time ./oltpbenchmark -b ${workload} -c /tmp/$cfgfile --create=true --load=true -s 5 -v -o ${dbtype}.${workload}.load.${host}
+          pg_dump -Fd -f $extern/$backupfile -h $host -p $port -U $username ${workload}
+        fi
+      ;;
+    cockroachdb)
+        if [ -d $extern/$backupfile ]; then
+          echo "Loading $extern/$backupfile/$backupfile"
+          cockroach sql --insecure --url "postgresql://$username@$host:$port" -e "restore database ${workload} from 'nodelocal:/$backupfile';"
+          sleep 5
+        else
+          cockroach sql --insecure --url "postgresql://$username@$host:$port" -e "create database ${workload};"
+          time ./oltpbenchmark -b ${workload} -c /tmp/$cfgfile --create=true --load=true -s 5 -v -o ${dbtype}.${workload}.load.${host}
+          cockroach sql --insecure --url "postgresql://$username@$host:$port" -e "BACKUP database ${workload} TO 'nodelocal:/$backupfile';"
+          sleep 5
+        fi
+      ;;
+    *)
+      echo "unknown dbtype ${dbtype}"
+    ;;
+  esac
 fi
 
 # run at various concurrency
 for t in ${terminal}; do
+
+  logfile=${dbtype}.${workload}.run.${t}.${scalefactor}.${host}
 
   if [[ ("${workload}" == "epinions") &&  ("${dbtype}" == "postgres") && ($t -gt 1) ]]; then
     echo "${dbtype} cannot run ${workload} at concurrency $t:  could not serialize access due to read/write dependencies among transactions"
     continue
   fi
 
-  logfile=${dbtype}.${workload}.run.${t}.${scalefactor}.${host}
-  cfgfile=${dbtype}_${workload}_config.xml
-
-  cat config/$cfgfile | sed "s|<terminals>.*</terminals>|<terminals>$t</terminals>|" > /tmp/$cfgfile.$$
+  sed -i.bak "s|<terminals>.*</terminals>|<terminals>$t</terminals>|"  /tmp/$cfgfile
 
   rm results/$logfile.res 2>/dev/null
   rm results/$logfile.csv 2>/dev/null
+  rm results/$logfile.hist 2>/dev/null
 
-  time ./oltpbenchmark -b ${workload} -c /tmp/$cfgfile.$$ --execute=true -s 5 -v -o $logfile
-
-  rm /tmp/$cfgfile.$$
+  ./oltpbenchmark -b ${workload} -c /tmp/$cfgfile --execute=true --dialects-export $logfile.sql -s 5 -v --histograms -im 5000 -o $logfile | tee -a results/$logfile.hist
 
   # don't re-run workloads that cannot return once run
   case $workload in 
@@ -148,3 +200,4 @@ for t in ${terminal}; do
   esac 
 done
 
+rm /tmp/$cfgfile /tmp/$cfgfile.bak 

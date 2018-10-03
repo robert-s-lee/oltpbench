@@ -53,7 +53,7 @@ public class TwitterWorker extends Worker<TwitterBenchmark> {
     @Override
     protected TransactionStatus executeWork(TransactionType nextTrans) throws UserAbortException, SQLException {
         TwitterOperation t = generator.nextTransaction();
-        t.uid = this.rng().nextInt(this.num_users - 1) + 1; // HACK Fix returning 0 for uid which violates foreign key reference
+        t.uid = this.rng().nextInt(this.num_users - 1) + 1; // Fix returning 0 for uid which violates foreign key reference
         
         if (nextTrans.getProcedureClass().equals(GetTweet.class)) {
             doSelect1Tweet(t.tweetid);

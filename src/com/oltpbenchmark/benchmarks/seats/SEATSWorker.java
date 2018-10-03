@@ -352,7 +352,7 @@ public class SEATSWorker extends Worker<SEATSBenchmark> {
                 assert(false) : "Unexpected transaction: " + txn; 
         } // SWITCH
         } catch(SQLException esql) {
-        	LOG.error("caught SQLException in SEATSWorker for procedure "+txnType.getName() +":" + esql, esql);
+        	LOG.error("caught SQLException in SEATSWorker for procedure " + txnType.getName() +":" + esql, esql);
         	throw esql;
         }/*catch(Exception e) {
         	LOG.error("caught Exception in SEATSWorker for procedure "+txnType.getName() +":" + e, e);
