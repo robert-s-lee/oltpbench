@@ -27,7 +27,7 @@ create table district (
   d_zip        char(9),
   constraint d_warehouse_fkey foreign key (d_w_id) references warehouse (w_id) ON DELETE CASCADE,
   constraint pk_district primary key (d_w_id, d_id)
-) -- interleave in parent warehouse (d_w_id)
+) interleave in parent warehouse (d_w_id)
 ;
 
 create table customer (
@@ -54,11 +54,11 @@ create table customer (
   c_data         varchar(500),
   constraint c_district_fkey foreign key (c_w_id, c_d_id) references district (d_w_id, d_id) ON DELETE CASCADE,
   constraint pk_customer primary key (c_w_id, c_d_id, c_id)
-) -- interleave in parent district (c_w_id, c_d_id)
+) interleave in parent district (c_w_id, c_d_id)
 ;
 
 create index customer_idx on customer (c_w_id, c_d_id, c_last, c_first)
-	-- interleave in parent district (c_w_id, c_d_id)
+	interleave in parent district (c_w_id, c_d_id)
 ;
 
 -- this table does not have a primay key.  Make one with hist_id
@@ -92,11 +92,11 @@ create table oorder (
   constraint o_customer_fkey foreign key (o_w_id, o_d_id, o_c_id) references  customer (c_w_id, c_d_id, c_id) ON DELETE CASCADE,
   constraint pk_oorder primary key (o_w_id, o_d_id, o_id),
   index (o_w_id, o_d_id, o_c_id)
-) -- interleave in parent district (o_w_id, o_d_id)
+) interleave in parent district (o_w_id, o_d_id)
 ;
 
 create unique index order_idx on oorder (o_w_id, o_d_id, o_carrier_id, o_id)
-	-- interleave in parent district (o_w_id, o_d_id)
+	interleave in parent district (o_w_id, o_d_id)
 ;
 
 create table new_order (
@@ -138,7 +138,7 @@ create table stock (
   constraint s_item_fkey foreign key (s_i_id) references item (i_id) ON DELETE CASCADE,
   constraint pk_stock primary key (s_w_id, s_i_id),
   index (s_i_id)
-) -- interleave in parent warehouse (s_w_id)
+) interleave in parent warehouse (s_w_id)
 ;
 
 create table order_line (
@@ -157,6 +157,6 @@ create table order_line (
   constraint pk_order_line primary key (ol_w_id, ol_d_id, ol_o_id, ol_number),
   index (ol_supply_w_id, ol_d_id),
   index (ol_supply_w_id, ol_i_id) 
-) -- interleave in parent oorder (ol_w_id, ol_d_id, ol_o_id)
+) interleave in parent oorder (ol_w_id, ol_d_id, ol_o_id)
 ;
 

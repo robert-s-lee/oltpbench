@@ -1,5 +1,6 @@
 
 # defaults
+backupurl="http://127.0.0.1:2015"     # assume using caddy method
 multirow=true
 host=""
 dburl=localhost
@@ -8,16 +9,20 @@ dbtype="cockroachdb"
 username="root"
 password=""
 isolation="TRANSACTION_SERIALIZABLE"
-terminal="32 16 8 4 2 1"
+terminal="8 4 2 1"
 scalefactor=1
 loaddata=""
-rate=unlimited
+rate=9999
 time=60
+memo=""
 extern=/Users/rslee/data/cockroach-data/1/extern
 
 # options
-while getopts "d:i:lm:p:r:u:s:t:w:" opt; do
+while getopts "b:d:i:lm:M:p:r:u:s:t:w:" opt; do
   case "${opt}" in
+    b)
+      backupurl="${OPTARG}"
+      ;;
     d)
       dbtype="${OPTARG}"
       ;;
@@ -29,6 +34,9 @@ while getopts "d:i:lm:p:r:u:s:t:w:" opt; do
       ;;
     m)
       time="${OPTARG}"
+      ;;
+    M)
+      memo=".${OPTARG}"
       ;;
     p)
       password="${OPTARG}"
@@ -118,7 +126,7 @@ EOF
   ;;
 esac
 
-backupfile=${dbtype}.${workload}.${scalefactor}
+backupfile=${dbtype}.${workload}.${scalefactor}${memo}
 cfgfile=${dbtype}_${workload}_config.xml
 
 # prepare config
@@ -150,7 +158,7 @@ if [ ! -z "$loaddata" ]; then
     postgres)
         if [ -d $extern/$backupfile ]; then
           echo "Loading $extern/$backupfile/$backupfile"
-          pg_restore -d ${workload} $extern/$backupfile 
+          pg_restore -d ${workload}  -h $host -p $port -U $username $extern/$backupfile 
         else
           time ./oltpbenchmark -b ${workload} -c /tmp/$cfgfile --create=true --load=true -s 5 -v -o ${dbtype}.${workload}.load.${host}
           pg_dump -Fd -f $extern/$backupfile -h $host -p $port -U $username ${workload}
@@ -159,12 +167,12 @@ if [ ! -z "$loaddata" ]; then
     cockroachdb)
         if [ -d $extern/$backupfile ]; then
           echo "Loading $extern/$backupfile/$backupfile"
-          cockroach sql --insecure --url "postgresql://$username@$host:$port" -e "restore database ${workload} from 'nodelocal:/$backupfile';"
+          cockroach sql --insecure --url "postgresql://$username@$host:$port" -e "restore database ${workload} from '${backupurl}:/$backupfile';"
           sleep 5
         else
           cockroach sql --insecure --url "postgresql://$username@$host:$port" -e "create database ${workload};"
           time ./oltpbenchmark -b ${workload} -c /tmp/$cfgfile --create=true --load=true -s 5 -v -o ${dbtype}.${workload}.load.${host}
-          cockroach sql --insecure --url "postgresql://$username@$host:$port" -e "BACKUP database ${workload} TO 'nodelocal:/$backupfile';"
+          cockroach sql --insecure --url "postgresql://$username@$host:$port" -e "BACKUP database ${workload} TO '${backupurl}:/$backupfile';"
           sleep 5
         fi
       ;;
@@ -177,7 +185,7 @@ fi
 # run at various concurrency
 for t in ${terminal}; do
 
-  logfile=${dbtype}.${workload}.run.${t}.${scalefactor}.${host}
+  logfile=${dbtype}.${workload}.run.${t}.${scalefactor}.${host}.${rate}${memo}
 
   if [[ ("${workload}" == "epinions") &&  ("${dbtype}" == "postgres") && ($t -gt 1) ]]; then
     echo "${dbtype} cannot run ${workload} at concurrency $t:  could not serialize access due to read/write dependencies among transactions"
@@ -200,4 +208,4 @@ for t in ${terminal}; do
   esac 
 done
 
-rm /tmp/$cfgfile /tmp/$cfgfile.bak 
+#rm /tmp/$cfgfile /tmp/$cfgfile.bak 

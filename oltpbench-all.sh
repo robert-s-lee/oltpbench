@@ -22,7 +22,6 @@
 
 setconfig() {
 
-
 os=`uname`
 case $os in
   Darwin)
@@ -65,15 +64,10 @@ EOF
 echo "host	all             all             192.168.0.0/24            trust" >> $pghba
 }
 
-times="8 4"
-dbtype="postgres mysql" #  cockraochdb" #
-#dbtype="cockroachdb" #
-#workload="auctionmark linkbench seats tpcc tatp twitter voter epinions sibench smallbank ycsb wikipedia resourcestresser"   
-workload="smallbank"   
-for t in $times; do
+dbtype="cockroachdb postgres"
+workload="auctionmark linkbench seats tpcc tatp twitter voter epinions sibench smallbank ycsb wikipedia resourcestresser"   
 for d in $dbtype; do
 for w in $workload; do
-./oltpbench.sh -i localhost -d $d -w $w -l -t $t
-done
+./oltpbench.sh -b "http://192.168.0.95:2015" -i hplan -d $d -w $w -l -t "32 16"
 done
 done
