@@ -16,9 +16,11 @@ rate=9999
 time=60
 memo=""
 extern=/Users/rslee/data/cockroach-data/1/extern
+crdb_dev_org="SET CLUSTER SETTING cluster.organization = 'Cockroach Labs - Production Testing';"
+crdb_dev_lic=${COCKROACH_DEV_LICENSE}
 
 # options
-while getopts "b:d:i:lm:M:p:r:u:s:t:w:" opt; do
+while getopts "b:d:i:lL:m:M:O:p:r:u:s:t:w:" opt; do
   case "${opt}" in
     b)
       backupurl="${OPTARG}"
@@ -32,11 +34,17 @@ while getopts "b:d:i:lm:M:p:r:u:s:t:w:" opt; do
     l)
       loaddata="1"
       ;;
+    L)
+      crdb_dev_lic="${OPTARG}"
+      ;;
     m)
       time="${OPTARG}"
       ;;
     M)
       memo=".${OPTARG}"
+      ;;
+    O)
+      crdb_dev_org="${OPTARG}"
       ;;
     p)
       password="${OPTARG}"
@@ -118,7 +126,10 @@ EOF
     driver="org.postgresql.Driver"
     dburl="jdbc:postgresql://${hostport}/${workload}?reWriteBatchedInserts=${multirow}\&amp;ApplicationName=${workload}"
     if [ ! -z "$loaddata" ]; then
-      cockroach sql --insecure --url "postgresql://$username@$host:$port" -e "SET CLUSTER SETTING kv.transaction.max_intents_bytes = 1256000;SET CLUSTER SETTING kv.transaction.max_refresh_spans_bytes = 1256000; SET CLUSTER SETTING kv.allocator.load_based_rebalancing = 'leases and replicas';drop database if exists ${workload} cascade;$COCKROACH_DEV_LICENSE"
+      cockroach sql --insecure --url "postgresql://$username@$host:$port" -e "SET CLUSTER SETTING kv.transaction.max_intents_bytes = 1256000;SET CLUSTER SETTING kv.transaction.max_refresh_spans_bytes = 1256000; SET CLUSTER SETTING kv.allocator.load_based_rebalancing = 'leases and replicas';drop database if exists ${workload} cascade;"
+      if [ ! -z "$crdb_dev_lic" ]; then
+        cockroach sql --insecure --url "postgresql://$username@$host:$port" -e "${crdb_dev_org};${crdb_dev_lic}"
+      fi
     fi
     ;;
   *)
