@@ -1,4 +1,4 @@
--- the order of statemnts need to be preserved for foreign key constraint
+-- the order of statements need to be preserved for foreign key constraint
 
 create table warehouse (
   w_id        integer   not null,

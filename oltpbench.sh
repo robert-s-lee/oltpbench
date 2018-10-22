@@ -142,6 +142,11 @@ sed  \
   -e  "s|<rate>.*</rate>|<rate>${rate}</rate>|" \
   config/sample_${workload}_config.xml > /tmp/$cfgfile
 
+# create results dir
+if [ ! -d results ]; then
+  mkdir results
+fi
+
 # create and load data
 if [ ! -z "$loaddata" ]; then
   case $dbtype in 
